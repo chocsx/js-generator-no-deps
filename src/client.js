@@ -22,4 +22,21 @@ async function processDBData() {
   return responses
 }
 
-console.table(await processDBData());
+// console.table(await processDBData());
+
+async function * processDBDataGen() {
+  const products = await myDB()
+
+  for (const product of products) {
+    const productInfo = await (await fetch(`${PRODUCTS_API}?name=${product}`)).text()
+    const cartAPIInfo = await (await fetch(CART_API, {
+      method: 'POST',
+      body: productInfo
+    })).text()
+
+    yield cartAPIInfo
+  }
+}
+for await(const data of processDBDataGen()) {
+  console.table(data);  
+}
